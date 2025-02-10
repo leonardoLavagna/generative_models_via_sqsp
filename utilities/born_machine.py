@@ -5,10 +5,8 @@
 # adapt the methodology in https://arxiv.org/abs/1804.04168 in the current project.
 #------------------------------------------------------------------------------
 
-
 import numpy as np
 import scipy.sparse as sps
-
 
 # GLOBAL VARIABLES (PAULI MATRIXES)
 I2 = sps.eye(2).tocsr()
@@ -20,13 +18,11 @@ sz = sps.csr_matrix([[1,0],[0,-1.]])
 p0 = (sz + I2) / 2  
 p1 = (-sz + I2) / 2
 
-
 def rot_matrix(si, theta):
     """
     Single qubit rotation
     """
     return np.cos(theta/2.)*I2 - 1j*np.sin(theta/2.)*si
-
 
 def rot(t1, t2, t3):
     '''
@@ -39,7 +35,6 @@ def rot(t1, t2, t3):
         2x2 csr_matrix: rotation matrix.
     '''
     return rot_matrix(sz, t3).dot(rot_matrix(sx, t2)).dot(rot_matrix(sz, t1))
-
 
 def CNOT(ibit, jbit, n):
     '''
@@ -56,7 +51,6 @@ def CNOT(ibit, jbit, n):
     res = compiler([p0, I2], [ibit, jbit], n)
     res = res + compiler([p1, sx], [ibit, jbit], n)
     return res
-
 
 def compiler(ops, locs, n):
     '''
@@ -82,7 +76,6 @@ def compiler(ops, locs, n):
     locs = np.concatenate([[0], locs[order], [n + 1]])
     return wrap_identity([ops[i] for i in order], np.diff(locs) - 1)
 
-
 def wrap_identity(data_list, num_bit_list):
     if len(num_bit_list) != len(data_list) + 1:
         raise Exception()
@@ -93,13 +86,11 @@ def wrap_identity(data_list, num_bit_list):
         res = sps.kron(res, sps.eye(2**nbit, dtype='complex128'))
     return res
 
-
 def initial_wf(num_bit):
     '''initial wave function |00...0>.'''
     wf = np.zeros(2**num_bit, dtype='complex128')
     wf[0] = 1.
     return wf
-
 
 def get_nn_pairs(num_bit):
     '''get nearest neighbor pairs (CNOTs are applied to these pairs).'''
@@ -123,26 +114,17 @@ def get_circuit(num_bit, depth, pairs):
     blocks[-1].mask[2::3] = False
     return BlockQueue(blocks)
 
-
-
-
-
-
-
-
 class ArbitraryRotation(object):
     '''Arbitrary rotation gate'''
     def __init__(self, num_bit):
         self.num_bit = num_bit
         # mask is used to filter out some irrelevant (marked False) parameters
         self.mask = np.array([True] * (3*num_bit), dtype='bool')
-
-    
+        
     @property
     def num_param(self):
         return self.mask.sum()
 
-    
     def tocsr(self, theta_list):
         '''transform this block to a sequence of csr_matrices.'''
         theta_list_ = np.zeros(3*self.num_bit)
@@ -150,7 +132,6 @@ class ArbitraryRotation(object):
         rots = [rot(*ths) for ths in theta_list_.reshape([self.num_bit,3])]
         res = [compiler([r], [i], self.num_bit) for i,r in enumerate(rots)]
         return res
-    
     
 class CNOTEntangler(object):
     '''
@@ -163,12 +144,10 @@ class CNOTEntangler(object):
         self.num_bit = num_bit
         self.pairs = pairs
 
-    
     @property
     def num_param(self):
         return 0
 
-    
     def tocsr(self, theta_list):
         '''transform this block to a sequence of csr_matrices.'''
         i, j = self.pairs[0]
@@ -177,8 +156,7 @@ class CNOTEntangler(object):
             res = CNOT(i,j,self.num_bit).dot(res)
         res.eliminate_zeros()
         return [res]
-    
-    
+      
 class BlockQueue(list):
     '''
     Block Queue that keep track of theta_list changing history, for fast update.
