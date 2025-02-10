@@ -1,10 +1,8 @@
 #------------------------------------------------------------------------------
-# QUANTUM BORN MACHINE FOR QUANTUM GENERATIVE MODELING VIA STRAIGHTFORWARD STATE PREPARATION
-# @ NesyaLab: github.com/NesyaLab
-#
-# References
-#    [1] https://github.com/GiggleLiu/QuantumCircuitBornMachine/
-#    [2] https://arxiv.org/abs/1804.04168
+# born_machine.py
+# 
+# Essentially a fork of https://github.com/GiggleLiu/QuantumCircuitBornMachine to 
+# adapt the methodology in https://arxiv.org/abs/1804.04168 in the current project.
 #------------------------------------------------------------------------------
 
 
