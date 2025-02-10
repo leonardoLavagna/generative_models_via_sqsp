@@ -2,7 +2,7 @@
 # born_machine.py
 # 
 # Essentially a fork of https://github.com/GiggleLiu/QuantumCircuitBornMachine to 
-# adapt the methodology in https://arxiv.org/abs/1804.04168 in the current project.
+# adapt the methodology in https://arxiv.org/abs/1804.04168 for the current project.
 #------------------------------------------------------------------------------
 
 import numpy as np
