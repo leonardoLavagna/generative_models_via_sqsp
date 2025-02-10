@@ -8,13 +8,13 @@
 import numpy as np
 import scipy.sparse as sps
 
-# GLOBAL VARIABLES (PAULI MATRIXES)
+#Pauli Matrices
 I2 = sps.eye(2).tocsr()
 sx = sps.csr_matrix([[0,1],[1,0.]])
 sy = sps.csr_matrix([[0,-1j],[1j,0.]])
 sz = sps.csr_matrix([[1,0],[0,-1.]])
 
-# GLOBAL VARIABLES (PROJECTORS)
+#Projectors
 p0 = (sz + I2) / 2  
 p1 = (-sz + I2) / 2
 
@@ -92,6 +92,31 @@ def initial_wf(num_bit):
     wf[0] = 1.
     return wf
 
+def _rot_tocsr_update1(layer, old, theta_old, theta_new):
+    '''
+    rotation layer csr_matrices update method.
+    
+    Args:
+        layer (ArbitraryRotation): rotation layer.
+        old (csr_matrix): old matrices.
+        theta_old (1darray): old parameters.
+        theta_new (1darray): new parameters.
+
+    Returns:
+        list of csr_matrix: new rotation matrices after the theta changed.
+    '''
+    idiff_param = np.where(abs(theta_old-theta_new)>1e-12)[0].item()
+    idiff = np.where(layer.mask)[0][idiff_param]
+
+    # get rotation parameters
+    isite = idiff//3
+    theta_list_ = np.zeros(3*layer.num_bit)
+    theta_list_[layer.mask] = theta_new
+    
+    new = old[:]
+    new[isite] = compiler(rot(*theta_list_[isite*3:isite*3+3]), isite, layer.num_bit)
+    return new
+    
 def get_nn_pairs(num_bit):
     '''get nearest neighbor pairs (CNOTs are applied to these pairs).'''
     res = []
@@ -221,28 +246,3 @@ class BlockQueue(list):
     @property
     def num_param(self):
         return sum([b.num_param for b in self])
-
-def _rot_tocsr_update1(layer, old, theta_old, theta_new):
-    '''
-    rotation layer csr_matrices update method.
-    
-    Args:
-        layer (ArbitraryRotation): rotation layer.
-        old (csr_matrix): old matrices.
-        theta_old (1darray): old parameters.
-        theta_new (1darray): new parameters.
-
-    Returns:
-        list of csr_matrix: new rotation matrices after the theta changed.
-    '''
-    idiff_param = np.where(abs(theta_old-theta_new)>1e-12)[0].item()
-    idiff = np.where(layer.mask)[0][idiff_param]
-
-    # get rotation parameters
-    isite = idiff//3
-    theta_list_ = np.zeros(3*layer.num_bit)
-    theta_list_[layer.mask] = theta_new
-    
-    new = old[:]
-    new[isite] = compiler(rot(*theta_list_[isite*3:isite*3+3]), isite, layer.num_bit)
-    return new
