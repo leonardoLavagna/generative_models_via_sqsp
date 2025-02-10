@@ -246,3 +246,216 @@ class BlockQueue(list):
     @property
     def num_param(self):
         return sum([b.num_param for b in self])
+
+class RBFMMD2(object):
+    '''
+    MMD^2 with RBF (Gaussian) kernel.
+    
+    Args:
+        sigma_list (list): a list of bandwidths.
+        basis (1darray): defininng space.
+      
+    Attributes:
+        K (2darray): full kernel matrix, notice the Hilbert space is countable.
+    '''
+    def __init__(self, sigma_list, basis):
+        self.sigma_list = sigma_list
+        self.basis = basis
+        self.K = mix_rbf_kernel(basis, basis, self.sigma_list)
+
+    def __call__(self, px, py):
+        '''
+        Args:
+            px (1darray, default=None): probability for data set x, used only when self.is_exact==True.
+            py (1darray, default=None): same as px, but for data set y.
+
+        Returns:
+            float: loss.
+        '''
+        pxy = px-py
+        return self.kernel_expect(pxy, pxy)
+
+    def kernel_expect(self, px, py):
+        '''
+        expectation value of kernel function.
+        
+        Args:
+            px (1darray): the first PDF.
+            py (1darray): the second PDF.
+            
+        Returns:
+            float: kernel expectation.
+        '''
+        return px.dot(self.K).dot(py)
+
+def mix_rbf_kernel(x, y, sigma_list):
+    '''
+    multi-RBF kernel.
+    
+    Args:
+        x (1darray|2darray): the collection of samples A.
+        x (1darray|2darray): the collection of samples B.
+        sigma_list (list): a list of bandwidths.
+        
+    Returns:
+        2darray: kernel matrix.
+    '''
+    ndim = x.ndim
+    if ndim == 1:
+        exponent = np.abs(x[:, None] - y[None, :])**2
+    elif ndim == 2:
+        exponent = ((x[:, None, :] - y[None, :, :])**2).sum(axis=2)
+    else:
+        raise
+    K = 0.0
+    for sigma in sigma_list:
+        gamma = 1.0 / (2 * sigma)
+        K = K + np.exp(-gamma * exponent)
+    return K
+
+
+class QCBM(object):
+    '''
+    Quantum Circuit Born Machine framework,
+
+    Args:
+        circuit (BlockQueue): the circuit architechture.
+        mmd (RBFMMD2): maximum mean discrepancy.
+        p_data (1darray): data probability distribution in computation basis.
+        batch_size (int|None): introducing sampling error, None for no sampling error.
+    '''
+    def __init__(self, circuit, mmd, p_data, batch_size=None):
+        self.circuit = circuit
+        self.mmd = mmd
+        self.p_data = p_data
+        self.batch_size = batch_size
+
+    @property
+    def depth(self):
+        '''defined by the number of entanglers'''
+        return (len(self.circuit)-1)//2
+
+    def pdf(self, theta_list):
+        '''
+        get probability distribution function.
+        
+        Args:
+            theta_list (1darray): circuit parameters.
+            
+        Returns:
+            1darray: probability distribution function.
+        '''
+        wf = initial_wf(self.circuit.num_bit)
+        self.circuit(wf, theta_list)
+        pl = np.abs(wf)**2
+        # introducing sampling error
+        if self.batch_size is not None:
+            pl = prob_from_sample(sample_from_prob(np.arange(len(pl)), pl, self.batch_size),
+                    len(pl))
+        return pl
+
+    def mmd_loss(self, theta_list):
+        '''get the loss'''
+        # get and cahe probability distritbution of Born Machine
+        self._prob = self.pdf(theta_list)
+        # use wave function to get mmd loss
+        return self.mmd(self._prob, self.p_data)
+
+    def gradient(self, theta_list):
+        '''
+        cheat and get gradient.
+        '''
+        prob = self.pdf(theta_list)
+        grad = []
+        for i in range(len(theta_list)):
+            # pi/2 phase
+            theta_list[i] += np.pi/2.
+            prob_pos = self.pdf(theta_list)
+            # -pi/2 phase
+            theta_list[i] -= np.pi
+            prob_neg = self.pdf(theta_list)
+            # recover
+            theta_list[i] += np.pi/2.
+
+            grad_pos = self.mmd.kernel_expect(prob, prob_pos) - self.mmd.kernel_expect(prob, prob_neg)
+            grad_neg = self.mmd.kernel_expect(self.p_data, prob_pos) - self.mmd.kernel_expect(self.p_data, prob_neg)
+            grad.append(grad_pos - grad_neg)
+        return np.array(grad)
+
+    def gradient_numerical(self, theta_list, delta=1e-2):
+        '''
+        numerical differenciation.
+        '''
+        grad = []
+        for i in range(len(theta_list)):
+            theta_list[i] += delta/2.
+            loss_pos = self.mmd_loss(theta_list)
+            theta_list[i] -= delta
+            loss_neg = self.mmd_loss(theta_list)
+            theta_list[i] += delta/2.
+
+            grad_i = (loss_pos - loss_neg)/delta
+            grad.append(grad_i)
+        return np.array(grad)
+    
+def sample_from_prob(x, pl, num_sample):
+    '''
+    sample x ~ pl.
+    '''
+    pl = 1. / pl.sum() * pl
+    indices = np.arange(len(x))
+    res = np.random.choice(indices, num_sample, p=pl)
+    return np.array([x[r] for r in res])
+
+
+def prob_from_sample(dataset, hndim):
+    '''
+    emperical probability from data.
+    '''
+    p_data = np.bincount(dataset, minlength=hndim)
+    p_data = p_data / float(np.sum(p_data))
+    return p_data
+
+
+ def train(bm, theta_list, method, max_iter=1000, step_rate=0.1):
+    '''
+    train a Born Machine.
+    
+    Args:
+        bm (QCBM): quantum circuit born machine training strategy.
+        theta_list (1darray): initial parameters.
+        method ('Adam'|'L-BFGS-B'):
+            * L-BFGS-B: efficient, but not noise tolerant.
+            * Adam: noise tolerant.
+        max_iter (int): maximum allowed number of iterations.
+        step_rate (float): learning rate for Adam optimizer.
+        
+    Returns:
+        (float, 1darray): final loss and parameters.
+    '''
+    step = [0]
+    def callback(x, *args, **kwargs):
+        step[0] += 1
+        print('step = %d, loss = %s'%(step[0], bm.mmd_loss(x)))
+        
+    theta_list = np.array(theta_list)
+    if method == 'Adam':
+        try:
+            from climin import Adam
+        except:
+            !pip install git+https://github.com/BRML/climin.git
+            from climin import Adam
+        optimizer = Adam(wrt=theta_list, fprime=bm.gradient,step_rate=step_rate)
+        for info in optimizer:
+            callback(theta_list)
+            if step[0] == max_iter:
+                break
+        return bm.mmd_loss(theta_list), theta_list
+    else:
+        from scipy.optimize import minimize
+        res = minimize(bm.mmd_loss, x0=theta_list,
+                       method=method, jac = bm.gradient, tol=1e-12,
+                       options={'maxiter': max_iter, 'disp': 0, 'gtol':1e-10, 'ftol':0},
+                       callback=callback,
+                       )
+        return res.fun, res.x
