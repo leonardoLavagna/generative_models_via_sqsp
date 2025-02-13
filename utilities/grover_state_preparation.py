@@ -94,39 +94,3 @@ def state_expansion(m, thetas):
                     qc.x(ctrl)
     qc.measure(range(m), range(m)[::-1])
     return qc
-
-
-def state_expansion(m, thetas):
-    """Constructs a quantum circuit that applies rotations based on the calculated angles.
-    
-    Args:
-        m (int): The number of qubits in the circuit.
-        thetas (list): A list of rotation angles computed for Grover's algorithm.
-    
-    Returns:
-        QuantumCircuit: A quantum circuit implementing the state preparation.
-    
-    Raises:
-        ValueError: If the number of angles does not match the required 2^m - 1.
-    
-    References:
-        - https://arxiv.org/pdf/quant-ph/0208112
-    """
-    if len(thetas) != 2**m - 1:
-        raise ValueError("The number of angles in 'thetas' must be 2^m - 1 for m qubits.")
-    qc = QuantumCircuit(m, m)
-    qc.ry(thetas[0], 0)
-    theta_index = 1
-    for qubit in range(1, m):
-        control_combinations = list(product([0, 1], repeat=qubit))
-        for combination in control_combinations:
-            for ctrl, state in enumerate(combination):
-                if state == 0:
-                    qc.x(ctrl)
-            qc.append(RYGate(thetas[theta_index]).control(len(combination)), list(range(qubit)) + [qubit])
-            theta_index += 1
-            for ctrl, state in enumerate(combination):
-                if state == 0:
-                    qc.x(ctrl)
-    qc.measure(range(m), range(m)[::-1])
-    return qc
