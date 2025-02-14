@@ -29,6 +29,7 @@
 
 import numpy as np
 from quantum_gates import rot, CNOT
+from compiler import compiler
 
 
 class ArbitraryRotation(object):
@@ -47,7 +48,7 @@ class ArbitraryRotation(object):
             num_bit (int): The number of qubits in the quantum system.
         '''
         self.num_bit = num_bit
-        self.mask = np.array([True] * (3 * num_bit), dtype='bool')  # Rotation mask for each qubit
+        self.mask = np.array([True] * (3 * num_bit), dtype='bool')  
 
     @property
     def num_param(self):
@@ -56,10 +57,10 @@ class ArbitraryRotation(object):
 
     def tocsr(self, theta_list):
         '''Transforms this block into a sequence of sparse CSR matrices.'''
-        theta_list_ = np.zeros(3 * self.num_bit)  # Initialize a zero array for the angles
-        theta_list_[self.mask] = theta_list  # Fill the mask with the provided angles
-        rots = [rot(*ths) for ths in theta_list_.reshape([self.num_bit, 3])]  # Apply rotations for each qubit
-        res = [_([r], [i], self.num_bit) for i, r in enumerate(rots)]  # Convert rotations into CSR matrices
+        theta_list_ = np.zeros(3 * self.num_bit) 
+        theta_list_[self.mask] = theta_list  
+        rots = [rot(*ths) for ths in theta_list_.reshape([self.num_bit, 3])]  
+        res = [compiler([r], [i], self.num_bit) for i, r in enumerate(rots)]  
         return res
 
 
