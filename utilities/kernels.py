@@ -1,3 +1,31 @@
+#------------------------------------------------------------------------------
+# kernels.py
+#
+# This module provides functionality for computing the squared Maximum Mean 
+# Discrepancy (MMD) using a mixture of Radial Basis Function (RBF) kernels. 
+# The MMD is a metric that measures the distance between two probability 
+# distributions, and is commonly used in machine learning for distribution 
+# comparison and statistical tests.
+#
+# Functions included:
+# - mix_rbf_kernel(x, y, sigma_list): Computes a mixture of RBF kernels between 
+#   two datasets `x` and `y` using a list of sigma values for the kernels.
+# - RBFMMD2: A class for computing the squared MMD between two datasets `x` 
+#   and `y` using the mixture of RBF kernels defined in `sigma_list`.
+#
+# This module is useful for tasks involving distribution matching and 
+# comparison, such as domain adaptation, generative models, and other statistical 
+# learning applications that require MMD as a loss function.
+#
+# Refs:
+# [1] https://github.com/GiggleLiu/QuantumCircuitBornMachine/tree/master
+# [2] https://arxiv.org/abs/1804.04168
+#
+# © Leonardo Lavagna 2025
+# @ NESYA https://github.com/NesyaLab
+#------------------------------------------------------------------------------
+
+
 import numpy as np
 
 
