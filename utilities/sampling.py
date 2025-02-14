@@ -18,7 +18,6 @@
 # Refs:
 # [1] https://github.com/GiggleLiu/QuantumCircuitBornMachine/tree/master
 # [2] https://arxiv.org/abs/1804.04168
-# [3] https://en.wikipedia.org/wiki/Maximum_likelihood_estimation
 #
 # © Leonardo Lavagna 2025
 # @ NESYA https://github.com/NesyaLab
