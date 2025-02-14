@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# quantum_circuit.py
+# qcbm.py
 #
 # This module provides various quantum circuit components for constructing and 
 # simulating quantum circuits used in the Quantum Circuit Born Machine (QCBM) framework.
