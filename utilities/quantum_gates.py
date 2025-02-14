@@ -22,7 +22,7 @@
 
 import numpy as np
 import scipy.sparse as sps
-from compiler import compiler
+from utilities.compiler import compiler
 
 
 # Define basic operators
