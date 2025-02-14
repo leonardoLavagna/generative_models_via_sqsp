@@ -16,7 +16,7 @@
 # - QCBM: Implements the Quantum Circuit Born Machine framework, which uses quantum 
 #   circuits to model probability distributions and optimize via MMD loss.
 # - Utility functions: Functions for gradient computation, sampling, and probability 
-#   distribution manipulation such as `get_nn_pairs`, `get_demo_circuit`, `sample_from_prob`, 
+#   distribution manipulation such as `get_nn_pairs`, `sample_from_prob`, 
 #   and `prob_from_sample`.
 #
 # Refs:
