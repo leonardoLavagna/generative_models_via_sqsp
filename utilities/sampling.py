@@ -23,8 +23,10 @@
 # © Leonardo Lavagna 2025
 # @ NESYA https://github.com/NesyaLab
 #------------------------------------------------------------------------------
-# Import necessary library
+
+
 import numpy as np
+
 
 def sample_from_prob(x, pl, num_sample):
     """
@@ -42,13 +44,8 @@ def sample_from_prob(x, pl, num_sample):
     Returns:
         numpy.ndarray: The sampled elements from `x`, shape (num_sample, n_features).
     """
-    # Normalize the probability distribution to ensure it sums to 1
     pl = pl / pl.sum()
-    
-    # Perform random sampling based on the normalized probability distribution
     indices = np.random.choice(len(x), num_sample, p=pl)
-    
-    # Return the sampled elements from x
     return x[indices]
 
 
@@ -67,8 +64,5 @@ def prob_from_sample(dataset, hndim):
     Returns:
         numpy.ndarray: The empirical probability distribution, shape (hndim,).
     """
-    # Count the occurrences of each element in the dataset
     counts = np.bincount(dataset, minlength=hndim)
-    
-    # Normalize the counts to obtain probabilities
     return counts / counts.sum()
