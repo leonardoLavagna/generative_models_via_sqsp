@@ -124,30 +124,30 @@ class BlockQueue(list):
             theta_list (numpy.ndarray): The list of parameters for the quantum gates.
         '''
         remember = self.theta_last is None or (abs(self.theta_last - theta_list) > 1e-12).sum() > 1
-        mats = []  # List to store the matrices for each operation
+        mats = []  
         theta_last = self.theta_last
         if remember:
-            self.theta_last = theta_list.copy()  # Update the last theta_list if parameters have changed
-        qureg_ = qureg  # Copy of the quantum register
+            self.theta_last = theta_list.copy()  
+        qureg_ = qureg 
         for iblock, block in enumerate(self):
             num_param = block.num_param
-            theta_i, theta_list = np.split(theta_list, [num_param])  # Split the theta_list for each block
+            theta_i, theta_list = np.split(theta_list, [num_param])
             if theta_last is not None:
                 theta_o, theta_last = np.split(theta_last, [num_param])  # Split previous theta_list
             if self.memo is not None and (num_param == 0 or np.abs(theta_i - theta_o).max() < 1e-12):
-                mat = self.memo[iblock]  # Use cached matrix if parameters haven't changed
+                mat = self.memo[iblock]  
             else:
                 if self.memo is not None and not remember:
-                    mat = _rot_tocsr_update1(block, self.memo[iblock], theta_o, theta_i)  # Update CSR matrices
+                    mat = _rot_tocsr_update1(block, self.memo[iblock], theta_o, theta_i)  
                 else:
-                    mat = block.tocsr(theta_i)  # Convert block to CSR matrix
+                    mat = block.tocsr(theta_i)  
             for mat_i in mat:
-                qureg_ = mat_i.dot(qureg_)  # Apply the matrix to the quantum register
-            mats.append(mat)  # Append the matrices for this block
+                qureg_ = mat_i.dot(qureg_) 
+            mats.append(mat) 
         if remember:
-            self.memo = mats  # Cache the matrices if needed
-        qureg[...] = qureg_  # Update the quantum register
-        np.testing.assert_(len(theta_list) == 0)  # Ensure no parameters remain after processing
+            self.memo = mats  
+        qureg[...] = qureg_  
+        np.testing.assert_(len(theta_list) == 0) 
 
     @property
     def num_bit(self):
@@ -198,9 +198,9 @@ class QCBM(object):
         Returns:
             numpy.ndarray: The probability distribution function computed from the quantum state.
         '''
-        wf = initial_wf(self.circuit.num_bit)  # Initialize the quantum state
-        self.circuit(wf, theta_list)  # Apply the quantum circuit
-        pl = np.abs(wf)**2  # Compute the probability distribution from the quantum state
+        wf = initial_wf(self.circuit.num_bit)  
+        self.circuit(wf, theta_list) 
+        pl = np.abs(wf)**2  
         # Introduce sampling error if batch_size is provided
         if self.batch_size is not None:
             pl = prob_from_sample(sample_from_prob(np.arange(len(pl)), pl, self.batch_size), len(pl))
