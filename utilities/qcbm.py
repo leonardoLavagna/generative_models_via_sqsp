@@ -89,11 +89,11 @@ class CNOTEntangler(object):
 
     def tocsr(self, theta_list):
         '''Transforms this block into a sequence of sparse CSR matrices.'''
-        i, j = self.pairs[0]  # Get the first pair
-        res = CNOT(i, j, self.num_bit)  # Apply the first CNOT gate
+        i, j = self.pairs[0]  
+        res = CNOT(i, j, self.num_bit)  
         for i, j in self.pairs[1:]:
-            res = CNOT(i, j, self.num_bit).dot(res)  # Apply the remaining CNOT gates
-        res.eliminate_zeros()  # Remove any zeros from the matrix
+            res = CNOT(i, j, self.num_bit).dot(res)
+        res.eliminate_zeros() 
         return [res]
 
 
@@ -133,7 +133,7 @@ class BlockQueue(list):
             num_param = block.num_param
             theta_i, theta_list = np.split(theta_list, [num_param])
             if theta_last is not None:
-                theta_o, theta_last = np.split(theta_last, [num_param])  # Split previous theta_list
+                theta_o, theta_last = np.split(theta_last, [num_param])  
             if self.memo is not None and (num_param == 0 or np.abs(theta_i - theta_o).max() < 1e-12):
                 mat = self.memo[iblock]  
             else:
