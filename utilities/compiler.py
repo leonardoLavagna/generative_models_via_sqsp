@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# quantum_compiler.py
+# compiler.py
 #
 # This module provides functions for compiling operators into a specific Hilbert 
 # space for quantum computing simulations. The `compiler` function integrates 
