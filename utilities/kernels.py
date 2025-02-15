@@ -50,29 +50,43 @@ def mix_rbf_kernel(x, y, sigma_list):
     return sum(np.exp(-exponent / (2 * sigma ** 2)) for sigma in sigma_list)
 
 
-class RBFMMD2:
-    """
-    Computes the squared Maximum Mean Discrepancy (MMD) using an RBF kernel.
+class RBFMMD2(object):
+    '''
+    MMD^2 with RBF (Gaussian) kernel.
 
     Args:
-        sigma_list (list or np.ndarray): List of sigma values for the RBF kernels.
-    """
-    def __init__(self, sigma_list):
+        sigma_list (list): a list of bandwidths.
+        basis (1darray): defininng space.
+
+    Attributes:
+        K (2darray): full kernel matrix, notice the Hilbert space is countable.
+    '''
+    def __init__(self, sigma_list, basis):
         self.sigma_list = sigma_list
+        self.basis = basis
+        self.K = mix_rbf_kernel(basis, basis, self.sigma_list)
 
-    def compute(self, x, y):
-        """
-        Computes the squared MMD between two datasets.
-
+    def __call__(self, px, py):
+        '''
         Args:
-            x (numpy.ndarray): Dataset x, shape (n_samples_x, n_features).
-            y (numpy.ndarray): Dataset y, shape (n_samples_y, n_features).
+            px (1darray, default=None): probability for data set x, used only when self.is_exact==True.
+            py (1darray, default=None): same as px, but for data set y.
 
         Returns:
-            float: The squared MMD value between the two datasets.
-        """
-        return (
-            mix_rbf_kernel(x, x, self.sigma_list) +
-            mix_rbf_kernel(y, y, self.sigma_list) -
-            2 * mix_rbf_kernel(x, y, self.sigma_list)
-        )
+            float: loss.
+        '''
+        pxy = px-py
+        return self.kernel_expect(pxy, pxy)
+
+    def kernel_expect(self, px, py):
+        '''
+        expectation value of kernel function.
+
+        Args:
+            px (1darray): the first PDF.
+            py (1darray): the second PDF.
+
+        Returns:
+            float: kernel expectation.
+        '''
+        return px.dot(self.K).dot(py)
