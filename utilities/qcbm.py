@@ -28,7 +28,7 @@
 #------------------------------------------------------------------------------
 
 import numpy as np
-from quantum_gates import rot, CNOT
+from utilities.quantum_gates import rot, CNOT
 from utilities.compiler import compiler, initial_wf
 
 
