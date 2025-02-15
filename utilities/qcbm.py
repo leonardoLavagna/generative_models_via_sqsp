@@ -28,7 +28,7 @@
 #------------------------------------------------------------------------------
 
 import numpy as np
-from utilities.quantum_gates import rot, CNOT
+from utilities.quantum_gates import rot, CNOT, _rot_tocsr_update1
 from utilities.compiler import compiler, initial_wf
 
 
