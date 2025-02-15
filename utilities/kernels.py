@@ -30,24 +30,29 @@ import numpy as np
 
 
 def mix_rbf_kernel(x, y, sigma_list):
-    """
-    Computes a mixture of RBF kernels between two datasets.
+    '''
+    multi-RBF kernel.
 
     Args:
-        x (numpy.ndarray): Dataset x, shape (n_samples_x, n_features).
-        y (numpy.ndarray): Dataset y, shape (n_samples_y, n_features).
-        sigma_list (list or np.ndarray): List of sigma values for the RBF kernels.
+        x (1darray|2darray): the collection of samples A.
+        x (1darray|2darray): the collection of samples B.
+        sigma_list (list): a list of bandwidths.
 
     Returns:
-        numpy.ndarray: The kernel matrix computed between x and y.
-    """
-    # Ensure sigma values are positive
-    if any(sigma <= 0 for sigma in sigma_list):
-        raise ValueError("All sigma values must be positive.")
-    
-    exponent = np.sum((x[:, None] - y[None, :]) ** 2, axis=-1)
-    # Use standard RBF kernel formula with sigma^2
-    return sum(np.exp(-exponent / (2 * sigma ** 2)) for sigma in sigma_list)
+        2darray: kernel matrix.
+    '''
+    ndim = x.ndim
+    if ndim == 1:
+        exponent = np.abs(x[:, None] - y[None, :])**2
+    elif ndim == 2:
+        exponent = ((x[:, None, :] - y[None, :, :])**2).sum(axis=2)
+    else:
+        raise
+    K = 0.0
+    for sigma in sigma_list:
+        gamma = 1.0 / (2 * sigma)
+        K = K + np.exp(-gamma * exponent)
+    return K
 
 
 class RBFMMD2(object):
