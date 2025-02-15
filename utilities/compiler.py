@@ -23,7 +23,6 @@
 
 import numpy as np
 import scipy.sparse as sps
-from utilities.quantum_gates import rot
 
 
 def compiler(ops, locs, n):
