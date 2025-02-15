@@ -29,7 +29,7 @@
 
 import numpy as np
 from utilities.quantum_gates import rot, CNOT
-from utilities.compiler import compiler, initial_wf, _rot_tocsr_update1
+from utilities.compiler import compiler, initial_wf
 
 
 class ArbitraryRotation(object):
