@@ -27,7 +27,7 @@
 
 
 import numpy as np
-
+from utilities.compiler import _rot_tocsr_update1
 
 def mix_rbf_kernel(x, y, sigma_list):
     '''
