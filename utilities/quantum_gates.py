@@ -74,6 +74,30 @@ def rot(t1, t2, t3):
     return _ri(sz, t3).dot(_ri(sx, t2)).dot(_ri(sz, t1))
 
 
+def _rot_tocsr_update1(layer, old, theta_old, theta_new):
+    '''
+    rotation layer csr_matrices update method.
+
+    Args:
+        layer (ArbitraryRotation): rotation layer.
+        old (csr_matrix): old matrices.
+        theta_old (1darray): old parameters.
+        theta_new (1darray): new parameters.
+
+    Returns:
+        list of csr_matrix: new rotation matrices after the theta changed.
+    '''
+    idiff_param = np.where(abs(theta_old-theta_new)>1e-12)[0].item()
+    idiff = np.where(layer.mask)[0][idiff_param]
+    # get rotation parameters
+    isite = idiff//3
+    theta_list_ = np.zeros(3*layer.num_bit)
+    theta_list_[layer.mask] = theta_new
+    new = old[:]
+    new[isite] = compiler(rot(*theta_list_[isite*3:isite*3+3]), isite, layer.num_bit)
+    return new
+
+
 def CNOT(ibit, jbit, n):
     """
     Generates a CNOT (Controlled-NOT) gate for the specified qubit positions.
