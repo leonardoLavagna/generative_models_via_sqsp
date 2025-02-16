@@ -27,7 +27,7 @@
 import numpy as np
 from utilities.grover_state_preparation import *
 from qiskit import transpile
-from config import m, backend
+from config import *
 
 
 def compute_loss(y_hat, y, loss_type="mmd"):
