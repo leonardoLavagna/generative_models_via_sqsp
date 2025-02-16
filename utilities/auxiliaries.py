@@ -30,6 +30,9 @@ from qiskit import transpile
 from config import *
 
 
+all_states = [format(i, f"0{m}b") for i in range(0, 2**m)]
+
+
 def compute_loss(y_hat, y, loss_type="mmd"):
     """
     Compute the loss between predicted and target values.
