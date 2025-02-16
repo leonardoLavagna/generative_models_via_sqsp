@@ -1,6 +1,48 @@
+#------------------------------------------------------------------------------
+# auxiliaries.py
+#
+# This module provides utility functions for computing loss metrics and 
+# generating parameters, which are useful in optimization tasks involving 
+# probability distributions and quantum computing.
+#
+# Functions included:
+# - compute_loss(y_hat, y, loss_type="mmd"): Computes the loss between predicted 
+#   and target values using L1, L2, or MMD loss.
+# - generate_parameters(n, k=2): Generates `n` random parameters within a 
+#   specified range for optimization.
+# - callback_fn(current_params): A callback function to monitor loss history 
+#   during optimization.
+# - compute_loss_partial(opt_thetas, full_thetas, opt_indices, p_target): 
+#   Computes the loss for a subset of optimized parameters within a larger 
+#   parameter set.
+#
+# These functions are useful in training variational quantum circuits, 
+# parameter optimization, and empirical loss computation.
+#
+# © Marco Casalbore & Leonardo Lavagna 2025
+# @ NESYA https://github.com/NesyaLab
+#------------------------------------------------------------------------------
+
 import numpy as np
 
 def compute_loss(y_hat, y, loss_type="mmd"):
+    """
+    Compute the loss between predicted and target values.
+    
+    Args:
+        y_hat (array-like): Predicted values.
+        y (array-like): Target values.
+        loss_type (str, optional): The type of loss to compute. Options are:
+            - "l1": L1 loss (sum of absolute differences).
+            - "l2": L2 loss (Euclidean distance).
+            - "mmd": MMD-based loss (default).
+
+    Returns:
+        float: Computed loss value.
+
+    Raises:
+        ValueError: If an unsupported loss type is provided.
+    """
     y_hat = np.array(y_hat)
     y = np.array(y)
     min_len = min(len(y_hat), len(y))
@@ -19,19 +61,43 @@ def compute_loss(y_hat, y, loss_type="mmd"):
 
 
   def generate_parameters(n, k=2):
-    return list(np.random.uniform(low=0, high=k * np.pi, size=n))
+    """
+    Generate a list of random parameters.
+    
+    Args:
+        n (int): Number of parameters to generate.
+        k (float, optional): Scaling factor for the range (default is 2).
 
-
-def generate_parameters(n, k=2):
+    Returns:
+        list: A list of `n` randomly generated parameters.
+    """
     return list(np.random.uniform(low=0, high=k * np.pi, size=n))
 
 
 def callback_fn(current_params):
+    """
+    Callback function for monitoring optimization loss.
+
+    Args:
+        current_params (array-like): The current optimization parameters.
+    """
     current_loss = compute_loss(exp_distribution, p_target, loss_type="mmd")
     loss_history.append(current_loss)
 
 
 def compute_loss_partial(opt_thetas, full_thetas, opt_indices, p_target):
+    """
+    Compute loss for a subset of optimized parameters.
+
+    Args:
+        opt_thetas (list or array): The optimized parameters.
+        full_thetas (list or array): The full parameter list.
+        opt_indices (list): Indices in `full_thetas` that are updated by `opt_thetas`.
+        p_target (array-like): Target probability distribution.
+
+    Returns:
+        float: Computed loss value.
+    """
     new_thetas = full_thetas.copy()
     for i, idx in enumerate(opt_indices):
         new_thetas[idx] = opt_thetas[i]
