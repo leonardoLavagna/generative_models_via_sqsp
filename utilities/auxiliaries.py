@@ -25,6 +25,7 @@
 
 
 import numpy as np
+from utilities.grover_state_preparation import *
 
 
 def compute_loss(y_hat, y, loss_type="mmd"):
@@ -74,17 +75,6 @@ def generate_parameters(n, k=2):
         list: A list of `n` randomly generated parameters.
     """
     return list(np.random.uniform(low=0, high=k * np.pi, size=n))
-
-
-def callback_fn(current_params):
-    """
-    Callback function for monitoring optimization loss.
-
-    Args:
-        current_params (array-like): The current optimization parameters.
-    """
-    current_loss = compute_loss(exp_distribution, p_target, loss_type="mmd")
-    loss_history.append(current_loss)
 
 
 def compute_loss_partial(opt_thetas, full_thetas, opt_indices, p_target):
