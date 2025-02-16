@@ -23,7 +23,9 @@
 # @ NESYA https://github.com/NesyaLab
 #------------------------------------------------------------------------------
 
+
 import numpy as np
+
 
 def compute_loss(y_hat, y, loss_type="mmd"):
     """
@@ -60,7 +62,7 @@ def compute_loss(y_hat, y, loss_type="mmd"):
         raise ValueError("Unsupported loss. Use 'l1', 'l2' o 'mmd'.")
 
 
-  def generate_parameters(n, k=2):
+def generate_parameters(n, k=2):
     """
     Generate a list of random parameters.
     
