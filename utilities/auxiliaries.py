@@ -26,6 +26,7 @@
 
 import numpy as np
 from utilities.grover_state_preparation import *
+from config import m
 
 
 def compute_loss(y_hat, y, loss_type="mmd"):
