@@ -56,6 +56,20 @@ def loss(samples, p_i_set):
 
 
 def objective_function(thetas_to_optimize, idx_thetas_to_optimize, thetas, p_i_set, shots):
+    """
+    Evaluates the objective function by updating parameterized angles, 
+    running a quantum circuit, and computing the loss.
+
+    Args:
+        thetas_to_optimize (list or array): Values to update in the thetas list.
+        idx_thetas_to_optimize (list of int): Indices in thetas to replace.
+        thetas (list or array): Full parameter list for the circuit.
+        p_i_set (array-like): Target probability distribution.
+        shots (int): Number of measurement shots for quantum execution.
+
+    Returns:
+        float: The computed objective value based on the loss function.
+    """
     angles = thetas.copy()
     for i, index in enumerate(idx_thetas_to_optimize):
         angles[index] = thetas_to_optimize[i]
