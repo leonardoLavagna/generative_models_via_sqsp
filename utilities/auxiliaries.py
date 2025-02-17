@@ -57,19 +57,21 @@ def loss(samples, p_i_set):
 
 def objective_function(thetas_to_optimize, idx_thetas_to_optimize, thetas, p_i_set, shots):
     angles = thetas.copy()
-    for i, index in enumerate(idx_thetas_fixed):
+    for i, index in enumerate(idx_thetas_to_optimize):
         angles[index] = thetas_to_optimize[i]
+    print(angles)
     qc = state_expansion(m, angles)
     t_qc = transpile(qc, backend=backend)
     job = backend.run(t_qc, shots=shots)
     counts = job.result().get_counts(qc)
     samples = np.array([counts.get(state, 0) for state in all_states], dtype=float)
     if samples.sum() > 0:
-        samples /= exp_distribution.sum()
+        samples /= samples.sum()
     else:
-        samples = np.zeros_like(exp_distribution)
+        samples = np.zeros_like(samples)
     objective = loss(samples, p_i_set)
     return objective
+
 
 
 def generate_parameters(n, k=2):
