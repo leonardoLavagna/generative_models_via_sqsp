@@ -48,8 +48,8 @@ def loss(samples, p_i_set):
     samples = np.array(samples)
     p_i_set = np.array(p_i_set)
     min_len = min(len(samples), len(p_i_set))
-    y_hat = y_hat[:min_len]
-    y = y[:min_len] 
+    y_hat = samples[:min_len]
+    y = p_i_set[:min_len] 
     squared_diff = np.sum((y - y_hat) ** 2)
     euclidean_dist = np.sqrt(squared_diff)
     return euclidean_dist + np.sum(np.abs(y - y_hat))
