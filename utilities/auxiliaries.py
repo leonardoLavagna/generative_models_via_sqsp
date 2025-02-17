@@ -59,7 +59,6 @@ def objective_function(thetas_to_optimize, idx_thetas_to_optimize, thetas, p_i_s
     angles = thetas.copy()
     for i, index in enumerate(idx_thetas_to_optimize):
         angles[index] = thetas_to_optimize[i]
-    print(angles)
     qc = state_expansion(m, angles)
     t_qc = transpile(qc, backend=backend)
     job = backend.run(t_qc, shots=shots)
