@@ -27,45 +27,64 @@
 import numpy as np
 from utilities.grover_state_preparation import *
 from qiskit import transpile
+from qiskit.circuit import ParameterVector
 from config import *
 
 
 all_states = [format(i, f"0{m}b") for i in range(0, 2**m)]
 
 
-def compute_loss(y_hat, y, loss_type="mmd"):
+def loss(samples, p_i_set):
     """
     Compute the loss between predicted and target values.
     
     Args:
-        y_hat (array-like): Predicted values.
-        y (array-like): Target values.
-        loss_type (str, optional): The type of loss to compute. Options are:
-            - "l1": L1 loss (sum of absolute differences).
-            - "l2": L2 loss (Euclidean distance).
-            - "mmd": MMD-based loss (default).
+        samples (array-like): Predicted values.
+        p_i_set (array-like): Target values.
 
     Returns:
         float: Computed loss value.
-
-    Raises:
-        ValueError: If an unsupported loss type is provided.
     """
-    y_hat = np.array(y_hat)
-    y = np.array(y)
-    min_len = min(len(y_hat), len(y))
-    y_hat = y_hat[:min_len]
-    y = y[:min_len]
-    if loss_type == "l1":  
-        return np.sum(np.abs(y - y_hat))
-    elif loss_type == "l2":  
-        return np.sqrt(np.sum((y - y_hat) ** 2))
-    elif loss_type == "mmd":  
-        squared_diff = np.sum((y - y_hat) ** 2)
-        euclidean_dist = np.sqrt(squared_diff)
-        return euclidean_dist + 1e-6 * np.sum(np.abs(y - y_hat))
+    samples = np.array(samples)
+    p_i_set = np.array(p_i_set)
+    min_len = min(len(samples), len(p_i_set))
+    y_hat = samples[:min_len]
+    y = p_i_set[:min_len] 
+    squared_diff = np.sum((y - y_hat) ** 2)
+    euclidean_dist = np.sqrt(squared_diff)
+    return euclidean_dist + np.sum(np.abs(y - y_hat))
+
+
+def objective_function(thetas_to_optimize, idx_thetas_to_optimize, thetas, p_i_set, shots):
+    """
+    Evaluates the objective function by updating parameterized angles, 
+    running a quantum circuit, and computing the loss.
+
+    Args:
+        thetas_to_optimize (list or array): Values to update in the thetas list.
+        idx_thetas_to_optimize (list of int): Indices in thetas to replace.
+        thetas (list or array): Full parameter list for the circuit.
+        p_i_set (array-like): Target probability distribution.
+        shots (int): Number of measurement shots for quantum execution.
+
+    Returns:
+        float: The computed objective value based on the loss function.
+    """
+    angles = thetas.copy()
+    for i, index in enumerate(idx_thetas_to_optimize):
+        angles[index] = thetas_to_optimize[i]
+    qc = state_expansion(m, angles)
+    t_qc = transpile(qc, backend=backend)
+    job = backend.run(t_qc, shots=shots)
+    counts = job.result().get_counts(qc)
+    samples = np.array([counts.get(state, 0) for state in all_states], dtype=float)
+    if samples.sum() > 0:
+        samples /= samples.sum()
     else:
-        raise ValueError("Unsupported loss. Use 'l1', 'l2' o 'mmd'.")
+        samples = np.zeros_like(samples)
+    objective = loss(samples, p_i_set)
+    return objective
+
 
 
 def generate_parameters(n, k=2):
@@ -80,29 +99,3 @@ def generate_parameters(n, k=2):
         list: A list of `n` randomly generated parameters.
     """
     return list(np.random.uniform(low=0, high=k * np.pi, size=n))
-
-
-def compute_loss_partial(opt_thetas, full_thetas, opt_indices, p_target):
-    """
-    Compute loss for a subset of optimized parameters.
-
-    Args:
-        opt_thetas (list or array): The optimized parameters.
-        full_thetas (list or array): The full parameter list.
-        opt_indices (list): Indices in `full_thetas` that are updated by `opt_thetas`.
-        p_target (array-like): Target probability distribution.
-
-    Returns:
-        float: Computed loss value.
-    """
-    new_thetas = full_thetas.copy()
-    for i, idx in enumerate(opt_indices):
-        new_thetas[idx] = opt_thetas[i]
-    qc_partial = state_expansion(m, list(new_thetas))
-    t_qc_partial = transpile(qc_partial, backend=backend)
-    job_partial = backend.run(t_qc_partial, shots=shots)
-    counts_partial = job_partial.result().get_counts(qc_partial)
-    exp_distribution = np.array([counts_partial.get(state, 0) for state in all_states], dtype=float)
-    if exp_distribution.sum() > 0:
-        exp_distribution /= exp_distribution.sum()
-    return compute_loss(exp_distribution, p_target, loss_type="mmd")
