@@ -7,3 +7,4 @@ shots = 1024
 optimizer_type = "COBYLA"
 max_iterations = 20
 runs = 10
+max_trainable_params = 2**m-1
