@@ -15,7 +15,7 @@ runs = 10
 
 # Target distribution
 max_trainable_params = 2**m-1
-beta_1 = 2
-beta_2 = 2
+alpha_ = 2
+beta_ = 2
 a = 0
 b = 1     
