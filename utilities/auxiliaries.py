@@ -28,7 +28,7 @@ from qiskit.circuit import ParameterVector
 from config import *
 
 
-all_states = [format(i, f"0{m}b") for i in range(0, 2**m)]
+all_states = [format(i, f"0{m}b") for i in range(2**m)]
 
 
 def loss(samples, p_i_set):
