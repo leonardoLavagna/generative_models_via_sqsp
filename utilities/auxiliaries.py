@@ -6,15 +6,12 @@
 # probability distributions and quantum computing.
 #
 # Functions included:
-# - compute_loss(y_hat, y, loss_type="mmd"): Computes the loss between predicted 
-#   and target values using L1, L2, or MMD loss.
+# - loss(samples, p_i_set): Computes the loss between predicted  and target values
+# - objective_function(thetas_to_optimize, idx_thetas_to_optimize, thetas, p_i_set, shots)
+#   Evaluates the objective function by updating parameterized angles, running a quantum
+#   circuit, and computing the loss
 # - generate_parameters(n, k=2): Generates `n` random parameters within a 
 #   specified range for optimization.
-# - callback_fn(current_params): A callback function to monitor loss history 
-#   during optimization.
-# - compute_loss_partial(opt_thetas, full_thetas, opt_indices, p_target): 
-#   Computes the loss for a subset of optimized parameters within a larger 
-#   parameter set.
 #
 # These functions are useful in training variational quantum circuits, 
 # parameter optimization, and empirical loss computation.
