@@ -83,7 +83,6 @@ def objective_function(thetas_to_optimize, idx_thetas_to_optimize, thetas, p_i_s
     return objective
 
 
-
 def generate_parameters(n, k=2):
     """
     Generate a list of random parameters.
