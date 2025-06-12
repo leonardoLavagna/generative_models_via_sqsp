@@ -1,5 +1,4 @@
 from qiskit_aer import Aer
-from scipy.stats import beta
 
 # Quantum backend simulator
 backend = Aer.get_backend("aer_simulator")
