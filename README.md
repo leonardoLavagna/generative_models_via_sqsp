@@ -8,7 +8,8 @@ Here you can find the code and tests associated to the project.
 - `config.py` is a simple configuration file containing test parameters (e.g. the number of qubits and the number of runs).
 -  `documentation.ipynb` is the documentation file detailing all the implemented functions and tests.
 -  `requirements.txt` contains the requirements to run the code.
-  
+-  `LICENSE` MIT License.
+
 ## Use this repository
 If you want to use the code in this repository in your projects, please cite explicitely our work, and
 * Clone the repository with `git clone https://github.com/leonardoLavagna/generative_models_via_sqsp`
