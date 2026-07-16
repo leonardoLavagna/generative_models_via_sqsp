@@ -25,7 +25,3 @@ This project is licensed under the MIT License.
 
 ## Citation
 Cite this repository or one of the associated papers, such as: TO COMPLETE
-
-```
-...
-```
